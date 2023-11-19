@@ -1,21 +1,19 @@
-class Ship {
+export default class Ship {
   constructor(length) {
     this.length = length;
-    this.hits = 0;
-    this.sunk = false;
-  }
-
-  isSunk() {
-    if (this.hits >= this.length) {
-      this.sunk = true;
-      console.log("This ship is sunk!");
-    }
+    this.hits = Array(length).fill(false);
   }
 
   hit() {
-    this.hits += 1;
-    this.isSunk();
+    const firstUnhitIndex = this.hits.indexOf(false);
+    if (firstUnhitIndex !== -1) {
+      this.hits[firstUnhitIndex] = true;
+    }
+  }
+
+  isSunk() {
+    return this.hits.every((hit) => hit);
   }
 }
 
-module.exports = Ship;
+// module.exports = { Ship };
