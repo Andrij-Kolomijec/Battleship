@@ -1,0 +1,32 @@
+* {
+  margin: 0;
+  padding: 0;
+  /* border: 1px solid; */
+}
+
+body {
+  height: 99vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+#content {
+  display: flex;
+  flex-direction: column;
+}
+
+#board-container {
+  display: flex;
+}
+
+.gameboard {
+  display: grid;
+  grid-template: repeat(10, 30px) / repeat(10, 30px);
+  border: 1px solid;
+}
+
+.cell {
+  border: 1px solid;
+}
