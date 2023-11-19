@@ -9,10 +9,13 @@
         "prettier"
     ],
     "parserOptions": {
-        "ecmaVersion": "latest"
+        "ecmaVersion": "latest",
+        "sourceType": "module"
     },
     "ignorePatterns": ["**/*test.js"],
     "rules": {
+        "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+        "max-classes-per-file": ["error", { "ignoreExpressions": true, "max": 2 }],
         "no-console": "off"
     }
 }
