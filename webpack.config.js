@@ -10,16 +10,19 @@ module.exports = {
   devtool: "inline-source-map",
   devServer: {
     static: "./src",
+    hot: true,
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: "./src/index.html",
+      inject: false,
     }),
   ],
   output: {
     filename: "main.js",
     path: path.resolve(__dirname, "dist"),
     clean: true,
+    publicPath: "/",
   },
   module: {
     rules: [
