@@ -19,7 +19,7 @@ export default class Gameboard {
         if (this.grid[row] && this.grid[row][col + i] !== null) {
           return false;
         }
-      } else if (this.grid[row + i][col] !== null) {
+      } else if (!this.grid[row + i] || this.grid[row + i][col] !== null) {
         return false;
       }
     }
