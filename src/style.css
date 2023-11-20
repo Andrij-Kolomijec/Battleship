@@ -1,7 +1,7 @@
 * {
   margin: 0;
   padding: 0;
-  /* border: 1px solid; */
+  /* border: 1px solid grey; */
 }
 
 body {
@@ -15,18 +15,74 @@ body {
 #content {
   display: flex;
   flex-direction: column;
+  gap: 20px;
+}
+
+#button-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 
 #board-container {
+  display: grid;
+  grid-template: auto / auto auto auto auto ;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.fleet {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.fleet.player {
+  align-items: flex-end;
+}
+
+.vessel {
   display: flex;
 }
 
-.gameboard {
-  display: grid;
-  grid-template: repeat(10, 30px) / repeat(10, 30px);
-  border: 1px solid;
+.vessel > div {
+  border: 1px solid grey;
+  border-top: 2px solid grey;
+  border-bottom: 2px solid grey;
+  background-color: blue;
+  height: 20px;
+  width: 20px;
 }
 
-.cell {
-  border: 1px solid;
+.vessel > div:first-child {
+  border-left: 2px solid grey;
+}
+
+.vessel > div:last-child {
+  border-right: 2px solid grey;
+}
+
+#gameboard-enemy,
+#gameboard-player {
+  display: grid;
+  grid-template: repeat(10, 30px) / repeat(10, 30px);
+  border: 1px solid grey;
+}
+
+.cell,
+.cell-enemy {
+  border: 1px solid grey;
+}
+
+.ship {
+  background-color: blue;
+}
+
+.hit {
+  background-color: rgb(165, 165, 165);
+}
+
+.hit.ship,
+.hit.ship-enemy {
+  background-color: red;
 }
