@@ -16,6 +16,8 @@
     "rules": {
         "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
         "max-classes-per-file": ["error", { "ignoreExpressions": true, "max": 2 }],
-        "no-console": "off"
+        "no-console": "off",
+        "no-restricted-syntax": "off",
+        "no-param-reassign": "off"
     }
 }
