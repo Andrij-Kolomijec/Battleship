@@ -18,6 +18,7 @@
         "max-classes-per-file": ["error", { "ignoreExpressions": true, "max": 2 }],
         "no-console": "off",
         "no-restricted-syntax": "off",
-        "no-param-reassign": "off"
+        "no-param-reassign": "off",
+        "guard-for-in": "off"
     }
 }
