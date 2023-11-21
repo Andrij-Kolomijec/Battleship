@@ -51,20 +51,24 @@ export default class Gameboard {
       const ship = this.grid[row][col];
       ship.hit();
       this.attackedCells.push(cellCoordinates);
-      this.checkVictory(ship);
+      // this.checkVictory(ship);
+      if (ship.isSunk()) {
+        this.sunkenShips += 1;
+      }
       return true;
     }
     this.attackedCells.push(cellCoordinates);
     return false;
   }
 
-  checkVictory(ship) {
-    if (ship.isSunk()) {
-      this.sunkenShips += 1;
-    }
-    if (this.sunkenShips >= 7) {
-      console.log("Fleet destroyed!");
-    }
+  checkVictory() {
+    return this.sunkenShips >= 7;
+    // if (ship.isSunk()) {
+    //   this.sunkenShips += 1;
+    // }
+    // if (this.sunkenShips >= 7) {
+    //   console.log("Fleet destroyed!");
+    // }
   }
 
   display() {
