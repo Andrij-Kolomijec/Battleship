@@ -28,16 +28,27 @@ export default class Gameboard {
 
   placeShip(ship, row, col, orientation) {
     const isValidPlacement = this.isValidPlacement(ship, row, col, orientation);
+    // console.log(ship, row, col, orientation);
     if (isValidPlacement) {
+      // ship.coordinates = [];
       for (let i = 0; i < ship.length; i++) {
         if (orientation === "horizontal") {
           this.grid[row][col + i] = ship;
+          ship.coordinates.push(`${row}-${col + i}`);
         } else {
           this.grid[row + i][col] = ship;
+          ship.coordinates.push(`${row + i}-${col}`);
         }
       }
+      ship.orientation = orientation;
     } else {
       console.log("Invalid ship placement!");
+    }
+  }
+
+  removeShip(ship) {
+    for (const coordinate of ship.coordinates) {
+      this.grid[coordinate[0]][coordinate[2]] = null;
     }
   }
 

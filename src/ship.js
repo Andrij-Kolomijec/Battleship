@@ -1,7 +1,10 @@
 export default class Ship {
-  constructor(length) {
+  constructor(length, name) {
     this.length = length;
+    this.name = name;
     this.hits = Array(length).fill(false);
+    this.coordinates = [];
+    this.orientation = null;
   }
 
   hit() {

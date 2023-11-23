@@ -6,7 +6,12 @@
 // const { Gameboard } = require("./gameboard");
 
 import "./style.css";
+// eslint-disable-next-line no-unused-vars
 import Battleship from "./battleship.jpg";
+// eslint-disable-next-line no-unused-vars
+import Github from "./github.svg";
+// eslint-disable-next-line no-unused-vars
+import favicon from "./favicon.svg";
 import Ship from "./ship";
 import Gameboard from "./gameboard";
 
@@ -22,15 +27,15 @@ let boardEnemy = new Gameboard(10, 10);
 let ships = {};
 let shipsEnemy = {};
 
-const initializeShips = () => {
+function initializeShips() {
   ships = {
-    submarine1: new Ship(1),
-    submarine2: new Ship(1),
-    destroyer1: new Ship(2),
-    destroyer2: new Ship(2),
-    cruiser: new Ship(3),
-    battleship: new Ship(4),
-    carrier: new Ship(5),
+    submarine1: new Ship(1, "submarine1"),
+    submarine2: new Ship(1, "submarine2"),
+    destroyer1: new Ship(2, "destroyer1"),
+    destroyer2: new Ship(2, "destroyer2"),
+    cruiser: new Ship(3, "cruiser"),
+    battleship: new Ship(4, "battleship"),
+    carrier: new Ship(5, "carrier"),
   };
   shipsEnemy = {
     submarine1Enemy: new Ship(1),
@@ -41,11 +46,9 @@ const initializeShips = () => {
     battleshipEnemy: new Ship(4),
     carrierEnemy: new Ship(5),
   };
-};
+}
 
-initializeShips();
-
-const createPlayerBoard = (() => {
+function createPlayerBoard() {
   for (let row = 0; row < 10; row++) {
     for (let col = 0; col < 10; col++) {
       const cell = document.createElement("div");
@@ -54,9 +57,9 @@ const createPlayerBoard = (() => {
       playerBoard.appendChild(cell);
     }
   }
-})();
+}
 
-const createEnemyBoard = (() => {
+function createEnemyBoard() {
   for (let row = 0; row < 10; row++) {
     for (let col = 0; col < 10; col++) {
       const cell = document.createElement("div");
@@ -65,17 +68,21 @@ const createEnemyBoard = (() => {
       enemyBoard.appendChild(cell);
     }
   }
-})();
-
-const cells = document.querySelectorAll(".cell");
+}
+initializeShips();
+createPlayerBoard();
+createEnemyBoard();
 const cellsEnemy = document.querySelectorAll(".cell-enemy");
 
+/* displays ships on the visible board according
+to the board object */
 function displayShips(board, enemy = false) {
   for (let row = 0; row < 10; row++) {
     for (let col = 0; col < 10; col++) {
       if (board.grid[row][col] && !enemy) {
         const cell = document.getElementById(`${row}-${col}`);
         cell.classList.add("ship");
+        cell.draggable = true;
       } else if (board.grid[row][col] && enemy) {
         const cell = document.getElementById(`${row}-${col}-enemy`);
         cell.classList.add("ship-enemy");
@@ -84,6 +91,7 @@ function displayShips(board, enemy = false) {
   }
 }
 
+/* places ships on random on the board */
 function randomPlacement(board, fleet) {
   for (const ship in fleet) {
     let row = Math.floor(Math.random() * 10);
@@ -98,19 +106,23 @@ function randomPlacement(board, fleet) {
   }
 }
 
+/* wipes added classes and overwrites existing boards with
+empty ones, removes event listeners from enemy board */
 function wipeBoards() {
-  const hitCells = document.querySelectorAll(".hit, .ship, .ship-enemy");
-  hitCells.forEach((cell) => {
+  const usedCells = document.querySelectorAll(".hit, .ship, .ship-enemy");
+  usedCells.forEach((cell) => {
     cell.classList.remove("ship");
     cell.classList.remove("hit");
     cell.classList.remove("ship-enemy");
   });
   boardPlayer = new Gameboard(10, 10);
   boardEnemy = new Gameboard(10, 10);
+  // eslint-disable-next-line no-use-before-define
   cellsEnemy.forEach((i) => i.removeEventListener("click", handlePlayerClick));
-  initializeShips();
 }
 
+/* for every ship in the fleet checks if the ship 
+is sunk and colors the center ship red if it is */
 function showSunkFleet(fleet, enemy = false) {
   for (const ship in fleet) {
     if (fleet[ship].isSunk() && !enemy) {
@@ -135,18 +147,24 @@ function showSunkFleet(fleet, enemy = false) {
 
 randomPlacement(boardPlayer, ships);
 displayShips(boardPlayer);
-
 randomPlacement(boardEnemy, shipsEnemy);
 displayShips(boardEnemy, true);
 
 buttonPlaceFleet.addEventListener("click", () => {
   textField.innerText = "Place your fleet!";
+  buttonPlaceFleet.innerText = "Random placement";
   wipeBoards();
+  initializeShips();
   randomPlacement(boardPlayer, ships);
   randomPlacement(boardEnemy, shipsEnemy);
   displayShips(boardPlayer);
   displayShips(boardEnemy, true);
-  window.ships = shipsEnemy;
+  board.addEventListener("dragstart", dragStart);
+  board.addEventListener("dragover", dragOver);
+  board.addEventListener("drop", dragDrop);
+  board.addEventListener("dragend", dragEnd);
+  window.ships = ships;
+  window.ships2 = shipsEnemy;
   window.board = boardPlayer;
   window.board2 = boardEnemy;
 });
@@ -175,22 +193,156 @@ function handlePlayerClick(e) {
     !boardEnemy.attackedCells.includes(`${e.target.id[0]}-${e.target.id[2]}`)
   ) {
     playerAttack(e);
+    if (boardEnemy.checkVictory()) {
+      textField.innerText = "You win!";
+      cellsEnemy.forEach((i) =>
+        i.removeEventListener("click", handlePlayerClick),
+      );
+      return;
+    }
     computerAttack();
+    if (boardPlayer.checkVictory()) {
+      textField.innerText = "You loose!";
+      cellsEnemy.forEach((i) =>
+        i.removeEventListener("click", handlePlayerClick),
+      );
+    }
   }
+}
+
+function setupPlayerTurn() {
+  cellsEnemy.forEach((cell) =>
+    cell.addEventListener("click", handlePlayerClick),
+  );
 }
 
 function gameplay() {
   textField.innerText = "Game has started!";
-  function setupPlayerTurn() {
-    cellsEnemy.forEach((cell) =>
-      cell.addEventListener("click", handlePlayerClick),
-    );
-  }
+  buttonPlaceFleet.innerText = "New game";
   setupPlayerTurn();
 }
 
-buttonStart.addEventListener("click", gameplay);
+const board = document.querySelector("#gameboard-player");
 
-window.ships = shipsEnemy;
+buttonStart.addEventListener("click", () => {
+  gameplay();
+  board.removeEventListener("dragstart", dragStart);
+  board.removeEventListener("dragover", dragOver);
+  board.removeEventListener("drop", dragDrop);
+  board.removeEventListener("dragend", dragEnd);
+});
+
+function dragStart(e) {
+  const row = e.target.id[0];
+  const col = e.target.id[2];
+  e.dataTransfer.effectAllowed = "move";
+  e.dataTransfer.setData(
+    "application/json",
+    JSON.stringify(boardPlayer.grid[row][col]),
+  );
+  e.target.classList.add("dragging");
+}
+
+function dragOver(e) {
+  e.preventDefault();
+}
+
+function dragDrop(e) {
+  e.preventDefault();
+  /* get the data from picked up cell */
+  e.dataTransfer.dropEffect = "move";
+  const data = JSON.parse(e.dataTransfer.getData("application/json"));
+  const ship = new Ship(data.length, data.name);
+  const { orientation } = data;
+  const rowFrom = data.coordinates[0][0];
+  const colFrom = data.coordinates[0][2];
+  /* places the ship into the target cell */
+  const row = parseInt(e.target.id[0], 10);
+  const col = parseInt(e.target.id[2], 10);
+  if (boardPlayer.isValidPlacement(ship, row, col, orientation)) {
+    /* removes the ship visualy */
+    for (const coordinate of boardPlayer.grid[rowFrom][colFrom].coordinates) {
+      document
+        .getElementById(`${coordinate[0]}-${coordinate[2]}`)
+        .classList.remove("ship");
+    }
+    /* removes the ship from the board */
+    boardPlayer.removeShip(boardPlayer.grid[rowFrom][colFrom]);
+    /* places the ship in the new location */
+    boardPlayer.placeShip(ship, row, col, orientation);
+    /* update coordinates in ships object according to board */
+    ships[ship.name].coordinates = boardPlayer.grid[row][col].coordinates;
+    ships[ship.name].hits = boardPlayer.grid[row][col].hits;
+  }
+}
+
+function dragEnd() {
+  const dragged = document.querySelector(".dragging");
+  dragged.classList.remove("dragging");
+  displayShips(boardPlayer);
+}
+
+board.addEventListener("dragstart", dragStart);
+board.addEventListener("dragover", dragOver);
+board.addEventListener("drop", dragDrop);
+board.addEventListener("dragend", dragEnd);
+
+function checkAvailableOrientation(ship) {
+  /* if present orientation is this, check the other */
+  if (ship.orientation === "horizontal") {
+    for (let i = 1; i < ship.length; i++) {
+      const row = parseInt(ship.coordinates[0][0], 10);
+      const col = parseInt(ship.coordinates[0][2], 10);
+      if (boardPlayer.grid[row + i][col]) {
+        return false;
+      }
+    }
+  } else {
+    for (let i = 1; i < ship.length; i++) {
+      const row = parseInt(ship.coordinates[0][0], 10);
+      const col = parseInt(ship.coordinates[0][2], 10);
+      if (boardPlayer.grid[row][col + i]) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function changeAxis(ship) {
+  if (checkAvailableOrientation(ship)) {
+    // change the boardPlayer object
+    // change and update ships object
+    // remove classes from original cells
+    // boardPlayer.removeShip(ship);
+    if (ship.orientation === "horizontal") {
+      boardPlayer.placeShip(
+        ship,
+        ship.coordinates[0][0],
+        ship.coordinates[0][2],
+        "vertical",
+      );
+    } else {
+      boardPlayer.placeShip(
+        ship,
+        ship.coordinates[0][0],
+        ship.coordinates[0][2],
+        "horizontal",
+      );
+    }
+  }
+}
+
+board.addEventListener("dblclick", (e) => {
+  const row = e.target.id[0];
+  const col = e.target.id[2];
+  const ship = boardPlayer.grid[row][col];
+  console.log(ship);
+  changeAxis(ship);
+  console.log(ship);
+});
+
+window.ships = ships;
+window.ships2 = shipsEnemy;
 window.board = boardPlayer;
 window.board2 = boardEnemy;
