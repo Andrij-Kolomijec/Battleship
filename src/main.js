@@ -5,6 +5,9 @@ import favicon from "./favicon.svg";
 import Ship from "./ship";
 import Gameboard from "./gameboard";
 
+document.querySelector('link[rel="icon"]').href = favicon;
+document.querySelector("img.icon").src = Github;
+
 const enemyBoard = document.querySelector("#gameboard-enemy");
 const playerBoard = document.querySelector("#gameboard-player");
 const buttonPlaceFleet = document.querySelector("#place-fleet");
