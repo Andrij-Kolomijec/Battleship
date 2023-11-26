@@ -1,16 +1,6 @@
-// function sum(a, b) {
-//   return a + b;
-// }
-// module.exports = sum;
-// const { Ship } = require("./ship");
-// const { Gameboard } = require("./gameboard");
-
 import "./style.css";
-// eslint-disable-next-line no-unused-vars
 import Battleship from "./battleship.jpg";
-// eslint-disable-next-line no-unused-vars
 import Github from "./github.svg";
-// eslint-disable-next-line no-unused-vars
 import favicon from "./favicon.svg";
 import Ship from "./ship";
 import Gameboard from "./gameboard";
@@ -152,6 +142,7 @@ displayShips(boardEnemy, true);
 
 buttonPlaceFleet.addEventListener("click", () => {
   textField.innerText = "Place your fleet!";
+  document.querySelector("#tooltip").style.display = "block";
   buttonPlaceFleet.innerText = "Random placement";
   wipeBoards();
   initializeShips();
@@ -161,12 +152,10 @@ buttonPlaceFleet.addEventListener("click", () => {
   displayShips(boardEnemy, true);
   board.addEventListener("dragstart", dragStart);
   board.addEventListener("dragover", dragOver);
+  board.addEventListener("dragenter", dragEnter);
+  board.addEventListener("dragleave", dragLeave);
   board.addEventListener("drop", dragDrop);
   board.addEventListener("dragend", dragEnd);
-  window.ships = ships;
-  window.ships2 = shipsEnemy;
-  window.board = boardPlayer;
-  window.board2 = boardEnemy;
 });
 
 function playerAttack(e) {
@@ -219,32 +208,91 @@ function setupPlayerTurn() {
 function gameplay() {
   textField.innerText = "Game has started!";
   buttonPlaceFleet.innerText = "New game";
+  document.querySelector("#tooltip").style.display = "none";
   setupPlayerTurn();
 }
 
 const board = document.querySelector("#gameboard-player");
+let orientation;
+const temp = { length: null };
+let possibleCells = [];
 
 buttonStart.addEventListener("click", () => {
   gameplay();
   board.removeEventListener("dragstart", dragStart);
   board.removeEventListener("dragover", dragOver);
+  board.addEventListener("dragenter", dragEnter);
+  board.addEventListener("dragleave", dragLeave);
   board.removeEventListener("drop", dragDrop);
   board.removeEventListener("dragend", dragEnd);
 });
 
 function dragStart(e) {
-  const row = e.target.id[0];
-  const col = e.target.id[2];
-  e.dataTransfer.effectAllowed = "move";
-  e.dataTransfer.setData(
-    "application/json",
-    JSON.stringify(boardPlayer.grid[row][col]),
-  );
-  e.target.classList.add("dragging");
+  if (e.target.classList.contains("ship")) {
+    const row = e.target.id[0];
+    const col = e.target.id[2];
+    e.dataTransfer.effectAllowed = "move";
+    const img = new Image();
+    img.src = "";
+    // Set empty image as the drag image
+    e.dataTransfer.setDragImage(img, 0, 0);
+    e.dataTransfer.setData(
+      "application/json",
+      JSON.stringify(boardPlayer.grid[row][col]),
+    );
+    temp.length = boardPlayer.grid[row][col].length;
+    orientation = boardPlayer.grid[row][col].orientation;
+  } else {
+    e.preventDefault();
+  }
 }
 
 function dragOver(e) {
-  e.preventDefault();
+  if (!e.target.classList.contains("ship")) e.preventDefault();
+}
+
+function dragEnter(e) {
+  possibleCells = [];
+  const row = parseInt(e.target.id[0], 10);
+  const col = parseInt(e.target.id[2], 10);
+  try {
+    if (orientation === "vertical") {
+      for (let i = 0; i < temp.length; i++) {
+        possibleCells.push(`${row + i}-${col}`);
+      }
+    } else {
+      for (let i = 0; i < temp.length; i++) {
+        possibleCells.push(`${row}-${col + i}`);
+      }
+    }
+    if (!boardPlayer.isValidPlacement(temp, row, col, orientation)) {
+      for (const i of possibleCells) {
+        const cell = document.getElementById(`${i[0]}-${i[2]}`);
+        cell.classList.remove("invalid-drop");
+        cell.classList.remove("valid-drop");
+        cell.classList.add("invalid-drop");
+      }
+    } else {
+      for (const i of possibleCells) {
+        const cell = document.getElementById(`${i[0]}-${i[2]}`);
+        cell.classList.remove("invalid-drop");
+        cell.classList.remove("valid-drop");
+        cell.classList.add("valid-drop");
+      }
+    }
+  } catch (error) {
+    console.log("Out of range: ", error);
+  }
+}
+
+function dragLeave() {
+  const cells = document.querySelectorAll(".cell");
+  cells.forEach((cell) => {
+    if (!possibleCells.includes(cell.id)) {
+      cell.classList.remove("invalid-drop");
+      cell.classList.remove("valid-drop");
+    }
+  });
 }
 
 function dragDrop(e) {
@@ -274,34 +322,44 @@ function dragDrop(e) {
     ships[ship.name].coordinates = boardPlayer.grid[row][col].coordinates;
     ships[ship.name].hits = boardPlayer.grid[row][col].hits;
   }
+  const cells = document.querySelectorAll(".invalid-drop, .valid-drop");
+  cells.forEach((cell) => {
+    cell.classList.remove("invalid-drop");
+    cell.classList.remove("valid-drop");
+  });
 }
 
 function dragEnd() {
-  const dragged = document.querySelector(".dragging");
-  dragged.classList.remove("dragging");
+  const cells = document.querySelectorAll(".invalid-drop, .valid-drop");
+  cells.forEach((cell) => {
+    cell.classList.remove("invalid-drop");
+    cell.classList.remove("valid-drop");
+  });
   displayShips(boardPlayer);
 }
 
 board.addEventListener("dragstart", dragStart);
 board.addEventListener("dragover", dragOver);
+board.addEventListener("dragenter", dragEnter);
+board.addEventListener("dragleave", dragLeave);
 board.addEventListener("drop", dragDrop);
 board.addEventListener("dragend", dragEnd);
 
 function checkAvailableOrientation(ship) {
-  /* if present orientation is this, check the other */
+  /* if current orientation is this, check the other */
   if (ship.orientation === "horizontal") {
+    const row = parseInt(ship.coordinates[0][0], 10);
+    const col = parseInt(ship.coordinates[0][2], 10);
     for (let i = 1; i < ship.length; i++) {
-      const row = parseInt(ship.coordinates[0][0], 10);
-      const col = parseInt(ship.coordinates[0][2], 10);
-      if (boardPlayer.grid[row + i][col]) {
+      if (row + i > 9 || boardPlayer.grid[row + i][col]) {
         return false;
       }
     }
   } else {
+    const row = parseInt(ship.coordinates[0][0], 10);
+    const col = parseInt(ship.coordinates[0][2], 10);
     for (let i = 1; i < ship.length; i++) {
-      const row = parseInt(ship.coordinates[0][0], 10);
-      const col = parseInt(ship.coordinates[0][2], 10);
-      if (boardPlayer.grid[row][col + i]) {
+      if (col + i > 9 || boardPlayer.grid[row][col + i]) {
         return false;
       }
     }
@@ -311,38 +369,30 @@ function checkAvailableOrientation(ship) {
 
 function changeAxis(ship) {
   if (checkAvailableOrientation(ship)) {
-    // change the boardPlayer object
-    // change and update ships object
-    // remove classes from original cells
-    // boardPlayer.removeShip(ship);
-    if (ship.orientation === "horizontal") {
-      boardPlayer.placeShip(
-        ship,
-        ship.coordinates[0][0],
-        ship.coordinates[0][2],
-        "vertical",
-      );
-    } else {
-      boardPlayer.placeShip(
-        ship,
-        ship.coordinates[0][0],
-        ship.coordinates[0][2],
-        "horizontal",
-      );
+    const row = parseInt(ship.coordinates[0][0], 10);
+    const col = parseInt(ship.coordinates[0][2], 10);
+    for (const coordinate of boardPlayer.grid[row][col].coordinates) {
+      document
+        .getElementById(`${coordinate[0]}-${coordinate[2]}`)
+        .classList.remove("ship");
     }
+    boardPlayer.removeShip(ship);
+    if (ship.orientation === "horizontal") {
+      boardPlayer.placeShip(ship, row, col, "vertical");
+    } else {
+      boardPlayer.placeShip(ship, row, col, "horizontal");
+    }
+    ships[ship.name].coordinates = boardPlayer.grid[row][col].coordinates;
+    ships[ship.name].hits = boardPlayer.grid[row][col].hits;
   }
 }
 
 board.addEventListener("dblclick", (e) => {
-  const row = e.target.id[0];
-  const col = e.target.id[2];
-  const ship = boardPlayer.grid[row][col];
-  console.log(ship);
-  changeAxis(ship);
-  console.log(ship);
+  if (e.target.classList.contains("ship")) {
+    const row = e.target.id[0];
+    const col = e.target.id[2];
+    const ship = boardPlayer.grid[row][col];
+    changeAxis(ship);
+    displayShips(boardPlayer);
+  }
 });
-
-window.ships = ships;
-window.ships2 = shipsEnemy;
-window.board = boardPlayer;
-window.board2 = boardEnemy;

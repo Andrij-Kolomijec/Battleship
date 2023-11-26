@@ -29,8 +29,9 @@ export default class Gameboard {
   placeShip(ship, row, col, orientation) {
     const isValidPlacement = this.isValidPlacement(ship, row, col, orientation);
     // console.log(ship, row, col, orientation);
+    // console.log(this.grid);
     if (isValidPlacement) {
-      // ship.coordinates = [];
+      ship.coordinates = [];
       for (let i = 0; i < ship.length; i++) {
         if (orientation === "horizontal") {
           this.grid[row][col + i] = ship;
