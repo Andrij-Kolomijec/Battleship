@@ -18,5 +18,3 @@ export default class Ship {
     return this.hits.every((hit) => hit);
   }
 }
-
-// module.exports = { Ship };

@@ -28,8 +28,6 @@ export default class Gameboard {
 
   placeShip(ship, row, col, orientation) {
     const isValidPlacement = this.isValidPlacement(ship, row, col, orientation);
-    // console.log(ship, row, col, orientation);
-    // console.log(this.grid);
     if (isValidPlacement) {
       ship.coordinates = [];
       for (let i = 0; i < ship.length; i++) {
@@ -63,7 +61,6 @@ export default class Gameboard {
       const ship = this.grid[row][col];
       ship.hit();
       this.attackedCells.push(cellCoordinates);
-      // this.checkVictory(ship);
       if (ship.isSunk()) {
         this.sunkenShips += 1;
       }
@@ -75,12 +72,6 @@ export default class Gameboard {
 
   checkVictory() {
     return this.sunkenShips >= 7;
-    // if (ship.isSunk()) {
-    //   this.sunkenShips += 1;
-    // }
-    // if (this.sunkenShips >= 7) {
-    //   console.log("Fleet destroyed!");
-    // }
   }
 
   display() {
@@ -99,5 +90,3 @@ export default class Gameboard {
     }
   }
 }
-
-// module.exports = { Gameboard };
